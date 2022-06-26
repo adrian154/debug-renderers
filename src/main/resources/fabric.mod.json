@@ -1,38 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "debugrenderers",
   "version": "${version}",
-
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
-  "authors": [
-    "Me!"
-  ],
+  "name": "Debug Renderers",
+  "description": "DebugRenderers enables Vanilla debug renderers that are normally not accessible.",
+  "authors": ["adrian154"],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://bithole.dev/",
+    "sources": "https://github.com/adrian154/debug-renderers"
   },
-
-  "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
-
+  "license": "MIT",
+  "icon": "assets/debugrenderers/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.fabricmc.example.ExampleMod"
-    ]
+    "main": ["dev.bithole.debugrenderers.DebugRenderersMod"],
+    "client": ["dev.bithole.debugrenderers.DebugRenderersClientMod"]
   },
   "mixins": [
-    "modid.mixins.json"
+    "debugrenderers.mixins.json"
   ],
-
   "depends": {
     "fabricloader": ">=0.14.6",
     "fabric": "*",
     "minecraft": "~1.19",
     "java": ">=17"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }
