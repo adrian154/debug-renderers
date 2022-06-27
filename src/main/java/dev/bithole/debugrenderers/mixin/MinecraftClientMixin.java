@@ -25,6 +25,7 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("neighborUpdate", debugRenderer.neighborUpdateDebugRenderer);
         DebugRenderersClientMod.addRenderer("structure", debugRenderer.structureDebugRenderer);
         DebugRenderersClientMod.addRenderer("skyLight", debugRenderer.skyLightDebugRenderer);
+
         DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
         DebugRenderersClientMod.addRenderer("blockOutline", debugRenderer.blockOutlineDebugRenderer);
         DebugRenderersClientMod.addRenderer("chunkLoading", debugRenderer.chunkLoadingDebugRenderer);

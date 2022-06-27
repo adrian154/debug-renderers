@@ -14,8 +14,14 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.DebugInfoSender;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.StructurePiece;
+import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -50,8 +56,8 @@ public class DebugInfoSenderMixin {
                 openSet.add(node);
         }
 
-        // this value appears to be unused and inaccessible outside of Path, so we won't bother with it
-        // annoyingly enough Path won't be serialize if this set has 0 members, though, so we need to feed it a dummy element
+        // this value appears to be inaccessible outside of Path, so we won't worry about its function too much
+        // however, Path::toBuffer won't write anything if this set has zero members, so we have to pass a dummy element
         Set<TargetPathNode> targetNodes = Collections.singleton(new TargetPathNode(0, 0, 0));
 
         try {
@@ -148,5 +154,28 @@ public class DebugInfoSenderMixin {
         sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_HIVE);
     }
 
+    private static void writeBlockBox(BlockBox box, PacketByteBuf buf) {
+        buf.writeInt(box.getMinX());
+        buf.writeInt(box.getMinY());
+        buf.writeInt(box.getMinZ());
+        buf.writeInt(box.getMaxX());
+        buf.writeInt(box.getMaxY());
+        buf.writeInt(box.getMaxZ());
+    }
+
+    @Inject(at = @At("HEAD"), method="sendStructureStart(Lnet/minecraft/world/StructureWorldAccess;Lnet/minecraft/structure/StructureStart;)V")
+    private static void sendStructureStart(StructureWorldAccess world, StructureStart structureStart, CallbackInfo info) {
+        if(world.isClient()) return;
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeIdentifier(world.getRegistryManager().get(Registry.DIMENSION_TYPE_KEY).getId(world.getDimension()));
+        writeBlockBox(structureStart.getBoundingBox(), buf);
+        List<StructurePiece> children = structureStart.getChildren();
+        buf.writeInt(children.size());
+        for(StructurePiece piece: children) {
+            writeBlockBox(piece.getBoundingBox(), buf);
+            buf.writeBoolean(false); // TODO: what does this do? the code shows that it controls the color... what is the color supposed to indicate?
+        }
+        sendToAll(world.toServerWorld(), buf, CustomPayloadS2CPacket.DEBUG_STRUCTURES);
+    }
 
 }
