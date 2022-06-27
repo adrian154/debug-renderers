@@ -1,0 +1,5 @@
+{
+  "commands.dbr.enabled": "Enabled %s renderer",
+  "commands.dbr.disabled": "Disabled %s renderer",
+  "commands.dbr.noSuchRenderer": "There is no renderer called %s"
+}
