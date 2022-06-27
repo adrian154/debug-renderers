@@ -2,16 +2,19 @@ package dev.bithole.debugrenderers.mixin;
 
 import dev.bithole.debugrenderers.DebugRenderersMod;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BeehiveBlockEntity;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.TargetPathNode;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.DebugInfoSender;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.annotation.Debug;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,19 +23,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 // WARNING: flaky code ahead due to poor documentation
 @Mixin(DebugInfoSender.class)
 public class DebugInfoSenderMixin {
 
-    private static int nextPathId = 0;
+    private static Map<Path, Integer> pathIDs = new WeakHashMap<>();
+    private static int nextPathID = 0;
 
     // this method is super sucky since i can't really tell what all the fields are supposed to mean
     private static void writePath(Path path, PacketByteBuf buf) {
@@ -49,9 +50,9 @@ public class DebugInfoSenderMixin {
                 openSet.add(node);
         }
 
-        Set<TargetPathNode> targetNodes = new HashSet<>();
-        BlockPos target = path.getTarget();
-        targetNodes.add(new TargetPathNode(target.getX(), target.getY(), target.getZ()));
+        // this value appears to be unused and inaccessible outside of Path, so we won't bother with it
+        // annoyingly enough Path won't be serialize if this set has 0 members, though, so we need to feed it a dummy element
+        Set<TargetPathNode> targetNodes = Collections.singleton(new TargetPathNode(0, 0, 0));
 
         try {
             Method method = path.getClass().getDeclaredMethod("setDebugInfo", PathNode[].class, PathNode[].class, Set.class);
@@ -69,19 +70,21 @@ public class DebugInfoSenderMixin {
         throw new AssertionError();
     }
 
-    /*
-    // FIXME: Path is missing some crap
     @Inject(at = @At("HEAD"), method="sendPathfindingData(Lnet/minecraft/world/World;Lnet/minecraft/entity/mob/MobEntity;Lnet/minecraft/entity/ai/pathing/Path;F)V")
     private static void sendPathfindingData(World world, MobEntity mob, @Nullable Path path, float nodeReachProximity, CallbackInfo info) {
         if(!world.isClient() && path != null) {
             PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeInt(nextPathId++);
+            Integer pathID = pathIDs.get(path);
+            if(pathID == null) {
+                pathID = nextPathID++;
+                pathIDs.put(path, pathID);
+            }
+            buf.writeInt(pathID);
             buf.writeFloat(nodeReachProximity);
-            path.toBuffer(buf);
+            writePath(path, buf);
             sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_PATH);
         }
     }
-    */
 
     @Inject(at = @At("HEAD"), method="sendNeighborUpdate(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V")
     private static void sendNeighborUpdate(World world, BlockPos pos, CallbackInfo info) {
@@ -116,7 +119,7 @@ public class DebugInfoSenderMixin {
         }
 
         // TODO: figure out if these are the right goals
-        List<String> goals = bee.getGoalSelector().getRunningGoals().map(goal -> goal.toString()).collect(Collectors.toList());
+        List<String> goals = bee.getGoalSelector().getRunningGoals().map(Goal::toString).toList();
         buf.writeVarInt(goals.size());
         for(String goal: goals) {
             buf.writeString(goal);
@@ -132,5 +135,18 @@ public class DebugInfoSenderMixin {
         sendToAll((ServerWorld)bee.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BEE);
 
     }
+
+    @Inject(at = @At("HEAD"), method="sendBeehiveDebugData(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/entity/BeehiveBlockEntity;)V")
+    private static void sendBeehiveDebugData(World world, BlockPos pos, BlockState state, BeehiveBlockEntity blockEntity, CallbackInfo info) {
+        if(world.isClient()) return;
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(pos);
+        buf.writeString(blockEntity.getType().toString()); // TODO: is this the right type?
+        buf.writeInt(blockEntity.getBeeCount());
+        buf.writeInt(BeehiveBlockEntity.getHoneyLevel(state));
+        buf.writeBoolean(blockEntity.isSmoked());
+        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_HIVE);
+    }
+
 
 }
