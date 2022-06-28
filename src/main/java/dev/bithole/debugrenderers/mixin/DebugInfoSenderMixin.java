@@ -5,6 +5,8 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.GoalSelector;
+import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.TargetPathNode;
@@ -22,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.village.raid.Raid;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
@@ -43,8 +46,24 @@ import java.util.*;
 @Mixin(DebugInfoSender.class)
 public class DebugInfoSenderMixin {
 
-    private static Map<Path, Integer> pathIDs = new WeakHashMap<>();
-    private static int nextPathID = 0;
+    private static class IDMapper<T> {
+
+        private final Map<T, Integer> ids = new WeakHashMap<>();
+        private int nextID = 0;
+
+        public int getID(T object) {
+            Integer id = ids.get(object);
+            if(id == null) {
+                id = nextID++;
+                ids.put(object, id);
+            }
+            return id;
+        }
+
+    }
+
+    private static IDMapper<Path> pathIDMapper = new IDMapper<>();
+    private static IDMapper<GoalSelector> goalSelectorIDMapper = new IDMapper<>();
 
     // this method is super sucky since i can't really tell what all the fields are supposed to mean
     private static void writePath(Path path, PacketByteBuf buf) {
@@ -52,10 +71,10 @@ public class DebugInfoSenderMixin {
         // categorize nodes into open/closed based on the `closed` parameter
         // this *seems* right, but I have no idea whether it is...
         List<PathNode> openSet = new ArrayList<>(),
-                       closedSet = new ArrayList<>();
-        for(int i = 0; i < path.getLength(); i++) {
+                closedSet = new ArrayList<>();
+        for (int i = 0; i < path.getLength(); i++) {
             PathNode node = path.getNode(i);
-            if(node.visited)
+            if (node.visited)
                 closedSet.add(node);
             else
                 openSet.add(node);
@@ -70,7 +89,7 @@ public class DebugInfoSenderMixin {
             method.setAccessible(true);
             method.invoke(path, openSet.toArray(new PathNode[0]), closedSet.toArray(new PathNode[0]), targetNodes);
             path.toBuffer(buf);
-        } catch(NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             DebugRenderersMod.LOGGER.error("This should never happen.");
         }
 
@@ -81,34 +100,29 @@ public class DebugInfoSenderMixin {
         throw new AssertionError();
     }
 
-    @Inject(at = @At("HEAD"), method="sendPathfindingData(Lnet/minecraft/world/World;Lnet/minecraft/entity/mob/MobEntity;Lnet/minecraft/entity/ai/pathing/Path;F)V")
+    @Inject(at = @At("HEAD"), method = "sendPathfindingData(Lnet/minecraft/world/World;Lnet/minecraft/entity/mob/MobEntity;Lnet/minecraft/entity/ai/pathing/Path;F)V")
     private static void sendPathfindingData(World world, MobEntity mob, @Nullable Path path, float nodeReachProximity, CallbackInfo info) {
-        if(!world.isClient() && path != null) {
+        if (!world.isClient() && path != null) {
             PacketByteBuf buf = PacketByteBufs.create();
-            Integer pathID = pathIDs.get(path);
-            if(pathID == null) {
-                pathID = nextPathID++;
-                pathIDs.put(path, pathID);
-            }
-            buf.writeInt(pathID);
+            buf.writeInt(pathIDMapper.getID(path));
             buf.writeFloat(nodeReachProximity);
             writePath(path, buf);
-            sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_PATH);
+            sendToAll((ServerWorld) world, buf, CustomPayloadS2CPacket.DEBUG_PATH);
         }
     }
 
-    @Inject(at = @At("HEAD"), method="sendNeighborUpdate(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V")
+    @Inject(at = @At("HEAD"), method = "sendNeighborUpdate(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V")
     private static void sendNeighborUpdate(World world, BlockPos pos, CallbackInfo info) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarLong(world.getTime());
         buf.writeBlockPos(pos);
-        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_NEIGHBORS_UPDATE);
+        sendToAll((ServerWorld) world, buf, CustomPayloadS2CPacket.DEBUG_NEIGHBORS_UPDATE);
     }
 
-    @Inject(at = @At("HEAD"), method="sendBeeDebugData(Lnet/minecraft/entity/passive/BeeEntity;)V")
+    @Inject(at = @At("HEAD"), method = "sendBeeDebugData(Lnet/minecraft/entity/passive/BeeEntity;)V")
     private static void sendBeeDebugData(BeeEntity bee, CallbackInfo info) {
 
-        if(bee.getWorld().isClient) return;
+        if (bee.getWorld().isClient) return;
 
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeDouble(bee.getX());
@@ -122,7 +136,7 @@ public class DebugInfoSenderMixin {
 
         // TODO: figure out if this is the right Path, there could be several!
         Path path = bee.getNavigation().getCurrentPath();
-        if(path != null) {
+        if (path != null) {
             buf.writeBoolean(true);
             writePath(path, buf);
         } else {
@@ -130,33 +144,33 @@ public class DebugInfoSenderMixin {
         }
 
         // TODO: figure out if these are the right goals
-        List<String> goals = bee.getGoalSelector().getRunningGoals().map(Goal::toString).toList();
+        List<String> goals = bee.getGoalSelector().getRunningGoals().map(goal -> goal.getGoal().toString()).toList();
         buf.writeVarInt(goals.size());
-        for(String goal: goals) {
+        for (String goal : goals) {
             buf.writeString(goal);
         }
 
         // looks like Yarn's mapping for this is wrong but oh well... i succumbed to the sweet elixir that are the Mojang's mappings and now i can never do anything to fix it
         List<BlockPos> blacklistedHives = bee.getPossibleHives();
         buf.writeVarInt(blacklistedHives.size());
-        for(BlockPos pos: blacklistedHives) {
+        for (BlockPos pos : blacklistedHives) {
             buf.writeBlockPos(pos);
         }
 
-        sendToAll((ServerWorld)bee.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BEE);
+        sendToAll((ServerWorld) bee.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BEE);
 
     }
 
-    @Inject(at = @At("HEAD"), method="sendBeehiveDebugData(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/entity/BeehiveBlockEntity;)V")
+    @Inject(at = @At("HEAD"), method = "sendBeehiveDebugData(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/entity/BeehiveBlockEntity;)V")
     private static void sendBeehiveDebugData(World world, BlockPos pos, BlockState state, BeehiveBlockEntity blockEntity, CallbackInfo info) {
-        if(world.isClient()) return;
+        if (world.isClient()) return;
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeBlockPos(pos);
         buf.writeString(blockEntity.getType().toString()); // TODO: is this the right type?
         buf.writeInt(blockEntity.getBeeCount());
         buf.writeInt(BeehiveBlockEntity.getHoneyLevel(state));
         buf.writeBoolean(blockEntity.isSmoked());
-        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_HIVE);
+        sendToAll((ServerWorld) world, buf, CustomPayloadS2CPacket.DEBUG_HIVE);
     }
 
     private static void writeBlockBox(BlockBox box, PacketByteBuf buf) {
@@ -168,44 +182,68 @@ public class DebugInfoSenderMixin {
         buf.writeInt(box.getMaxZ());
     }
 
-    @Inject(at = @At("HEAD"), method="sendStructureStart(Lnet/minecraft/world/StructureWorldAccess;Lnet/minecraft/structure/StructureStart;)V")
+    @Inject(at = @At("HEAD"), method = "sendStructureStart(Lnet/minecraft/world/StructureWorldAccess;Lnet/minecraft/structure/StructureStart;)V")
     private static void sendStructureStart(StructureWorldAccess world, StructureStart structureStart, CallbackInfo info) {
-        if(world.isClient()) return;
+        if (world.isClient()) return;
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeIdentifier(world.getRegistryManager().get(Registry.DIMENSION_TYPE_KEY).getId(world.getDimension()));
         writeBlockBox(structureStart.getBoundingBox(), buf);
         List<StructurePiece> children = structureStart.getChildren();
         buf.writeInt(children.size());
-        for(StructurePiece piece: children) {
+        for (StructurePiece piece : children) {
             writeBlockBox(piece.getBoundingBox(), buf);
             buf.writeBoolean(false); // TODO: what does this do? the code shows that it controls the color... what is the color supposed to indicate?
         }
         sendToAll(world.toServerWorld(), buf, CustomPayloadS2CPacket.DEBUG_STRUCTURES);
     }
 
-    @Inject(at = @At("HEAD"), method="sendGameEvent(Lnet/minecraft/world/World;Lnet/minecraft/world/event/GameEvent;Lnet/minecraft/util/math/Vec3d;)V")
+    @Inject(at = @At("HEAD"), method = "sendGameEvent(Lnet/minecraft/world/World;Lnet/minecraft/world/event/GameEvent;Lnet/minecraft/util/math/Vec3d;)V")
     private static void sendGameEvent(World world, GameEvent event, Vec3d pos, CallbackInfo info) {
-        if(world.isClient()) return;
+        if (world.isClient()) return;
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(event.getId());
         buf.writeDouble(pos.getX());
         buf.writeDouble(pos.getY());
         buf.writeDouble(pos.getZ());
-        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GAME_EVENT);
+        sendToAll((ServerWorld) world, buf, CustomPayloadS2CPacket.DEBUG_GAME_EVENT);
     }
 
-    @Inject(at = @At("HEAD"), method="sendGameEventListener(Lnet/minecraft/world/World;Lnet/minecraft/world/event/listener/GameEventListener;)V")
+    @Inject(at = @At("HEAD"), method = "sendGameEventListener(Lnet/minecraft/world/World;Lnet/minecraft/world/event/listener/GameEventListener;)V")
     private static void sendGameEventListener(World world, GameEventListener eventListener, CallbackInfo info) {
-        if(world.isClient()) return;
+        if (world.isClient()) return;
         PacketByteBuf buf = PacketByteBufs.create();
-        //buf.writeIdentifier(eventListener.)
         PositionSource posSource = eventListener.getPositionSource();
         PositionSourceType posSourceType = posSource.getType();
         buf.writeIdentifier(world.getRegistryManager().get(Registry.POSITION_SOURCE_TYPE_KEY).getId(posSourceType));
         posSourceType.writeToBuf(buf, posSource);
         buf.writeVarInt(eventListener.getRange());
-        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GAME_EVENT_LISTENERS);
+        sendToAll((ServerWorld) world, buf, CustomPayloadS2CPacket.DEBUG_GAME_EVENT_LISTENERS);
     }
 
+    @Inject(at = @At("HEAD"), method = "sendRaids(Lnet/minecraft/server/world/ServerWorld;Ljava/util/Collection;)V")
+    private static void sendRaids(ServerWorld world, Collection<Raid> raids, CallbackInfo info) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeInt(raids.size());
+        for (Raid raid : raids) {
+            buf.writeBlockPos(raid.getCenter());
+        }
+        sendToAll(world, buf, CustomPayloadS2CPacket.DEBUG_RAIDS);
+    }
+
+    @Inject(at = @At("HEAD"), method = "sendGoalSelector(Lnet/minecraft/world/World;Lnet/minecraft/entity/mob/MobEntity;Lnet/minecraft/entity/ai/goal/GoalSelector;)V")
+    private static void sendGoalSelector(World world, MobEntity mob, GoalSelector goalSelector, CallbackInfo info) {
+        if(world.isClient()) return;
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeBlockPos(mob.getBlockPos());
+        buf.writeInt(goalSelectorIDMapper.getID(goalSelector));
+        Set<PrioritizedGoal> goals = goalSelector.getGoals();
+        buf.writeInt(goals.size());
+        for(PrioritizedGoal goal: goals) {
+            buf.writeInt(goal.getPriority());
+            buf.writeBoolean(goal.isRunning());
+            buf.writeString(goal.getGoal().toString(), 255);
+        }
+        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GOAL_SELECTOR);
+    }
 
 }

@@ -31,12 +31,12 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("chunkLoading", debugRenderer.chunkLoadingDebugRenderer);
         DebugRenderersClientMod.addRenderer("bee", debugRenderer.beeDebugRenderer);
         DebugRenderersClientMod.addRenderer("gameTest", debugRenderer.gameTestDebugRenderer);
-        DebugRenderersClientMod.addRenderer("gameEvent", debugRenderer.gameEventDebugRenderer);
+        DebugRenderersClientMod.addRenderer("sculk", debugRenderer.gameEventDebugRenderer);
+        DebugRenderersClientMod.addRenderer("raidCenter", debugRenderer.raidCenterDebugRenderer);
 
         // WIP
         DebugRenderersClientMod.addRenderer("village", debugRenderer.villageDebugRenderer);
         DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
-        DebugRenderersClientMod.addRenderer("raidCenter", debugRenderer.raidCenterDebugRenderer);
         DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
 
         // broken
