@@ -1,9 +1,5 @@
 # DebugRenderers
 
-## Setup
+If you've ever played Minecraft, you might know that you can press F3 + B to show mob hitboxes and F3 + G to show chunk borders. However, did you know that there are 17 other debug renderers built into the game that show helpful information about features such as pathfinding or structure generation? This mob allows players to activate those renderers.
 
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
-
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+## THIS MOD IS STILL BEING DEVELOPED
