@@ -33,12 +33,12 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("gameTest", debugRenderer.gameTestDebugRenderer);
         DebugRenderersClientMod.addRenderer("sculk", debugRenderer.gameEventDebugRenderer);
         DebugRenderersClientMod.addRenderer("raidCenter", debugRenderer.raidCenterDebugRenderer);
+        DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
 
         // WIP
         DebugRenderersClientMod.addRenderer("village", debugRenderer.villageDebugRenderer);
         DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
-        DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
-
+        
         // broken
         DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
 
