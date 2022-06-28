@@ -19,10 +19,15 @@ import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.event.PositionSource;
+import net.minecraft.world.event.PositionSourceType;
+import net.minecraft.world.event.listener.GameEventListener;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
@@ -177,5 +182,30 @@ public class DebugInfoSenderMixin {
         }
         sendToAll(world.toServerWorld(), buf, CustomPayloadS2CPacket.DEBUG_STRUCTURES);
     }
+
+    @Inject(at = @At("HEAD"), method="sendGameEvent(Lnet/minecraft/world/World;Lnet/minecraft/world/event/GameEvent;Lnet/minecraft/util/math/Vec3d;)V")
+    private static void sendGameEvent(World world, GameEvent event, Vec3d pos, CallbackInfo info) {
+        if(world.isClient()) return;
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(event.getId());
+        buf.writeDouble(pos.getX());
+        buf.writeDouble(pos.getY());
+        buf.writeDouble(pos.getZ());
+        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GAME_EVENT);
+    }
+
+    @Inject(at = @At("HEAD"), method="sendGameEventListener(Lnet/minecraft/world/World;Lnet/minecraft/world/event/listener/GameEventListener;)V")
+    private static void sendGameEventListener(World world, GameEventListener eventListener, CallbackInfo info) {
+        if(world.isClient()) return;
+        PacketByteBuf buf = PacketByteBufs.create();
+        //buf.writeIdentifier(eventListener.)
+        PositionSource posSource = eventListener.getPositionSource();
+        PositionSourceType posSourceType = posSource.getType();
+        buf.writeIdentifier(world.getRegistryManager().get(Registry.POSITION_SOURCE_TYPE_KEY).getId(posSourceType));
+        posSourceType.writeToBuf(buf, posSource);
+        buf.writeVarInt(eventListener.getRange());
+        sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GAME_EVENT_LISTENERS);
+    }
+
 
 }

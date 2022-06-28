@@ -17,6 +17,8 @@ public class MinecraftClientMixin {
     public void init(RunArgs args, CallbackInfo info) {
 
         DebugRenderer debugRenderer = MinecraftClient.getInstance().debugRenderer;
+
+        // working
         DebugRenderersClientMod.addRenderer("pathfinding", debugRenderer.pathfindingDebugRenderer);
         DebugRenderersClientMod.addRenderer("water", debugRenderer.waterDebugRenderer);
         DebugRenderersClientMod.addRenderer("chunkBorder", debugRenderer.chunkBorderDebugRenderer);
@@ -25,17 +27,20 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("neighborUpdate", debugRenderer.neighborUpdateDebugRenderer);
         DebugRenderersClientMod.addRenderer("structure", debugRenderer.structureDebugRenderer);
         DebugRenderersClientMod.addRenderer("skyLight", debugRenderer.skyLightDebugRenderer);
-
-        DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
         DebugRenderersClientMod.addRenderer("blockOutline", debugRenderer.blockOutlineDebugRenderer);
         DebugRenderersClientMod.addRenderer("chunkLoading", debugRenderer.chunkLoadingDebugRenderer);
-        DebugRenderersClientMod.addRenderer("village", debugRenderer.villageDebugRenderer);
-        DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
         DebugRenderersClientMod.addRenderer("bee", debugRenderer.beeDebugRenderer);
-        DebugRenderersClientMod.addRenderer("raidCenter", debugRenderer.raidCenterDebugRenderer);
-        DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
         DebugRenderersClientMod.addRenderer("gameTest", debugRenderer.gameTestDebugRenderer);
         DebugRenderersClientMod.addRenderer("gameEvent", debugRenderer.gameEventDebugRenderer);
+
+        // WIP
+        DebugRenderersClientMod.addRenderer("village", debugRenderer.villageDebugRenderer);
+        DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
+        DebugRenderersClientMod.addRenderer("raidCenter", debugRenderer.raidCenterDebugRenderer);
+        DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
+
+        // broken
+        DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
 
     }
 
