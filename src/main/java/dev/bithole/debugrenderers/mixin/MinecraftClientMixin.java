@@ -36,9 +36,9 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
 
         // WIP
-        DebugRenderersClientMod.addRenderer("village", debugRenderer.villageDebugRenderer);
+        DebugRenderersClientMod.addRenderer("brain", debugRenderer.villageDebugRenderer);
         DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
-        
+
         // broken
         DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
 

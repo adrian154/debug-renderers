@@ -4,7 +4,8 @@
   "package": "dev.bithole.debugrenderers.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "DebugInfoSenderMixin"
+    "DebugInfoSenderMixin",
+    "PathMixin"
   ],
   "client": [
     "DebugRendererMixin",

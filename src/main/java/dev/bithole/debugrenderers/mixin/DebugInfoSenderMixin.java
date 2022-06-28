@@ -1,17 +1,15 @@
 package dev.bithole.debugrenderers.mixin;
 
-import dev.bithole.debugrenderers.DebugRenderersMod;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.GoalSelector;
 import net.minecraft.entity.ai.goal.PrioritizedGoal;
 import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.ai.pathing.PathNode;
-import net.minecraft.entity.ai.pathing.TargetPathNode;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.BeeEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.DebugInfoSender;
@@ -22,7 +20,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.village.raid.Raid;
 import net.minecraft.world.StructureWorldAccess;
@@ -38,8 +35,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 // WARNING: flaky code ahead due to poor documentation
@@ -62,41 +57,11 @@ public class DebugInfoSenderMixin {
 
     }
 
-    private static IDMapper<Path> pathIDMapper = new IDMapper<>();
-    private static IDMapper<GoalSelector> goalSelectorIDMapper = new IDMapper<>();
-
-    // this method is super sucky since i can't really tell what all the fields are supposed to mean
-    private static void writePath(Path path, PacketByteBuf buf) {
-
-        // categorize nodes into open/closed based on the `closed` parameter
-        // this *seems* right, but I have no idea whether it is...
-        List<PathNode> openSet = new ArrayList<>(),
-                closedSet = new ArrayList<>();
-        for (int i = 0; i < path.getLength(); i++) {
-            PathNode node = path.getNode(i);
-            if (node.visited)
-                closedSet.add(node);
-            else
-                openSet.add(node);
-        }
-
-        // this value appears to be inaccessible outside of Path, so we won't worry about its function too much
-        // however, Path::toBuffer won't write anything if this set has zero members, so we have to pass a dummy element
-        Set<TargetPathNode> targetNodes = Collections.singleton(new TargetPathNode(0, 0, 0));
-
-        try {
-            Method method = path.getClass().getDeclaredMethod("setDebugInfo", PathNode[].class, PathNode[].class, Set.class);
-            method.setAccessible(true);
-            method.invoke(path, openSet.toArray(new PathNode[0]), closedSet.toArray(new PathNode[0]), targetNodes);
-            path.toBuffer(buf);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            DebugRenderersMod.LOGGER.error("This should never happen.");
-        }
-
-    }
+    private static final IDMapper<Path> pathIDMapper = new IDMapper<>();
+    private static final IDMapper<GoalSelector> goalSelectorIDMapper = new IDMapper<>();
 
     @Invoker("sendToAll")
-    public static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
+    private static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
         throw new AssertionError();
     }
 
@@ -106,7 +71,7 @@ public class DebugInfoSenderMixin {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeInt(pathIDMapper.getID(path));
             buf.writeFloat(nodeReachProximity);
-            writePath(path, buf);
+            path.toBuffer(buf);
             sendToAll((ServerWorld) world, buf, CustomPayloadS2CPacket.DEBUG_PATH);
         }
     }
@@ -138,7 +103,7 @@ public class DebugInfoSenderMixin {
         Path path = bee.getNavigation().getCurrentPath();
         if (path != null) {
             buf.writeBoolean(true);
-            writePath(path, buf);
+            path.toBuffer(buf);
         } else {
             buf.writeBoolean(false);
         }
@@ -166,7 +131,7 @@ public class DebugInfoSenderMixin {
         if (world.isClient()) return;
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeBlockPos(pos);
-        buf.writeString(blockEntity.getType().toString()); // TODO: is this the right type?
+        buf.writeString(""); // TODO: figure out what this field ("type") could possibly mean
         buf.writeInt(blockEntity.getBeeCount());
         buf.writeInt(BeehiveBlockEntity.getHoneyLevel(state));
         buf.writeBoolean(blockEntity.isSmoked());
@@ -244,6 +209,31 @@ public class DebugInfoSenderMixin {
             buf.writeString(goal.getGoal().toString(), 255);
         }
         sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GOAL_SELECTOR);
+    }
+
+    @Invoker("writeBrain")
+    private static void writeBrain(LivingEntity entity, PacketByteBuf buf) {
+        throw new AssertionError();
+    }
+
+    @Inject(at = @At("HEAD"), method = "sendBrainDebugData(Lnet/minecraft/entity/LivingEntity;)V")
+    private static void sendBrainDebugData(LivingEntity entity, CallbackInfo info) {
+        if(!entity.getWorld().isClient() && entity instanceof VillagerEntity) {
+            VillagerEntity villager = (VillagerEntity)entity;
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeDouble(villager.getX());
+            buf.writeDouble(villager.getY());
+            buf.writeDouble(villager.getZ());
+            buf.writeUuid(villager.getUuid());
+            buf.writeInt(villager.getId());
+            buf.writeString(villager.getEntityName()); // TODO: which name is this?
+            buf.writeString(villager.getVillagerData().getProfession().toString());
+            buf.writeInt(villager.getExperience());
+            buf.writeFloat(villager.getHealth());
+            buf.writeFloat(villager.getMaxHealth());
+            writeBrain(entity, buf);
+            sendToAll((ServerWorld)entity.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BRAIN);
+        }
     }
 
 }
