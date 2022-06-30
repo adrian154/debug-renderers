@@ -218,22 +218,33 @@ public class DebugInfoSenderMixin {
 
     @Inject(at = @At("HEAD"), method = "sendBrainDebugData(Lnet/minecraft/entity/LivingEntity;)V")
     private static void sendBrainDebugData(LivingEntity entity, CallbackInfo info) {
-        if(!entity.getWorld().isClient() && entity instanceof VillagerEntity) {
+        if(entity.getWorld().isClient()) return;
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeDouble(entity.getX());
+        buf.writeDouble(entity.getY());
+        buf.writeDouble(entity.getZ());
+        buf.writeUuid(entity.getUuid());
+        buf.writeInt(entity.getId());
+        buf.writeString(entity.getEntityName()); // TODO: which name is this?
+        if(entity instanceof VillagerEntity) {
             VillagerEntity villager = (VillagerEntity)entity;
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeDouble(villager.getX());
-            buf.writeDouble(villager.getY());
-            buf.writeDouble(villager.getZ());
-            buf.writeUuid(villager.getUuid());
-            buf.writeInt(villager.getId());
-            buf.writeString(villager.getEntityName()); // TODO: which name is this?
             buf.writeString(villager.getVillagerData().getProfession().toString());
             buf.writeInt(villager.getExperience());
-            buf.writeFloat(villager.getHealth());
-            buf.writeFloat(villager.getMaxHealth());
-            writeBrain(entity, buf);
-            sendToAll((ServerWorld)entity.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BRAIN);
+        } else {
+            buf.writeString("");
+            buf.writeInt(0);
         }
+        buf.writeFloat(entity.getHealth());
+        buf.writeFloat(entity.getMaxHealth());
+        writeBrain(entity, buf);
+        sendToAll((ServerWorld)entity.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BRAIN);
     }
+
+    /*
+    @Inject(at = @At("HEAD"), method = "(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;)V")
+    private static void sendPoiAddition(ServerWorld world, BlockPos pos, CallbackInfo info) {
+
+    }
+    */
 
 }

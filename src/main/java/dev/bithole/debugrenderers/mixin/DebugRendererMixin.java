@@ -13,7 +13,7 @@ import java.util.Map;
 @Mixin(DebugRenderer.class)
 public class DebugRendererMixin {
 
-    @Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider/Immediate;DDD)V")
+    @Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;DDD)V")
     public void render(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, double cameraX, double cameraY, double cameraZ, CallbackInfo info) {
         for(Map.Entry<DebugRenderer.Renderer, Boolean> pair: DebugRenderersClientMod.rendererStatus.entrySet()) {
             if(pair.getValue()) {
