@@ -1,5 +1,6 @@
 package dev.bithole.debugrenderers.mixin;
 
+import dev.bithole.debugrenderers.DebugRenderersMod;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
@@ -112,7 +113,7 @@ public class DebugInfoSenderMixin {
         List<String> goals = bee.getGoalSelector().getRunningGoals().map(goal -> goal.getGoal().toString()).toList();
         buf.writeVarInt(goals.size());
         for (String goal : goals) {
-            buf.writeString(goal);
+            buf.writeString(DebugRenderersMod.remap(goal));
         }
 
         // looks like Yarn's mapping for this is wrong but oh well... i succumbed to the sweet elixir that are the Mojang's mappings and now i can never do anything to fix it
@@ -206,7 +207,7 @@ public class DebugInfoSenderMixin {
         for(PrioritizedGoal goal: goals) {
             buf.writeInt(goal.getPriority());
             buf.writeBoolean(goal.isRunning());
-            buf.writeString(goal.getGoal().toString(), 255);
+            buf.writeString(DebugRenderersMod.remap(goal.getGoal().toString()), 255);
         }
         sendToAll((ServerWorld)world, buf, CustomPayloadS2CPacket.DEBUG_GOAL_SELECTOR);
     }

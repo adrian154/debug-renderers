@@ -1,0 +1,8 @@
+{
+  "commands.dr.onEnabled": "Activado renderizador \"%s\"",
+  "commands.dr.onDisabled": "Desactivado renderizador \"%s\"",
+  "commands.dr.noSuchRenderer": "No hay ningún renderizador llamado \"%s\"",
+  "commands.dr.enabledHeader": "ACTIVADO: ",
+  "commands.dr.disabledHeader": "DESACTIVADO: ",
+  "commands.dr.none": "ninguno"
+}
