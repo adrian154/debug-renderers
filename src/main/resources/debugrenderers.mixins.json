@@ -11,7 +11,8 @@
   "client": [
     "DebugRendererMixin",
     "MinecraftClientMixin",
-    "PathfindingDebugRendererMixin"
+    "PathfindingDebugRendererMixin",
+    "GoalSelectorDebugRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
