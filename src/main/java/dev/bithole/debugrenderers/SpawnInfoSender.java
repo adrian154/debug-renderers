@@ -53,15 +53,8 @@ public class SpawnInfoSender {
             }
         }
 
-        sendToAll(world, buf, DEBUG_SPAWNING);
+        NetworkHelper.sendToAll(world, buf, DEBUG_SPAWNING);
 
-    }
-
-    private static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
-        CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(channel, buf);
-        for (PlayerEntity playerEntity : world.getPlayers()) {
-            ((ServerPlayerEntity)playerEntity).networkHandler.sendPacket(packet);
-        }
     }
 
 }

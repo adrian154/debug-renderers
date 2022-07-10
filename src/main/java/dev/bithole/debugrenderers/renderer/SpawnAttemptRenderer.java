@@ -18,6 +18,7 @@ import java.util.UUID;
 public class SpawnAttemptRenderer implements DebugRenderer.Renderer {
 
     private final MinecraftClient client;
+    private SpawnInfo latestInfo;
 
     public SpawnAttemptRenderer(MinecraftClient client) {
         this.client = client;
@@ -25,6 +26,14 @@ public class SpawnAttemptRenderer implements DebugRenderer.Renderer {
 
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, double cameraX, double cameraY, double cameraZ) {
 
+    }
+
+    public void setSpawnInfo(SpawnInfo info) {
+        this.latestInfo = info;
+    }
+
+    public SpawnInfo getSpawnInfo() {
+        return latestInfo;
     }
 
     public static class SpawnInfo {

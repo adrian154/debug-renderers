@@ -1,6 +1,9 @@
 package dev.bithole.debugrenderers.mixin;
 
 import dev.bithole.debugrenderers.DebugRenderersClientMod;
+import dev.bithole.debugrenderers.DebugRenderersMod;
+import dev.bithole.debugrenderers.renderer.CustomRenderers;
+import dev.bithole.debugrenderers.renderer.SpawnAttemptRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.render.debug.DebugRenderer;
@@ -16,7 +19,8 @@ public class MinecraftClientMixin {
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/client/RunArgs;)V")
     public void init(RunArgs args, CallbackInfo info) {
 
-        DebugRenderer debugRenderer = MinecraftClient.getInstance().debugRenderer;
+        MinecraftClient client = MinecraftClient.getInstance();
+        DebugRenderer debugRenderer = client.debugRenderer;
 
         // working
         DebugRenderersClientMod.addRenderer("pathfinding", debugRenderer.pathfindingDebugRenderer);
@@ -34,13 +38,16 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("sculk", debugRenderer.gameEventDebugRenderer);
         DebugRenderersClientMod.addRenderer("raidCenter", debugRenderer.raidCenterDebugRenderer);
         DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
+        DebugRenderersClientMod.addRenderer("brain", debugRenderer.villageDebugRenderer);
 
         // WIP
-        DebugRenderersClientMod.addRenderer("brain", debugRenderer.villageDebugRenderer);
-        DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
+       DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
 
         // broken
         DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
+
+        // custom
+        DebugRenderersClientMod.customRenderers = new CustomRenderers(client);
 
     }
 

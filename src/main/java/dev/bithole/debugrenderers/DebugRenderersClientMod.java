@@ -1,5 +1,7 @@
 package dev.bithole.debugrenderers;
 
+import dev.bithole.debugrenderers.renderer.CustomRenderers;
+import dev.bithole.debugrenderers.renderer.SpawnAttemptRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -18,6 +20,8 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 	public static final Map<String, DebugRenderer.Renderer> debugRenderers = new HashMap<>();
 	public static final Map<DebugRenderer.Renderer, Boolean> rendererStatus = new HashMap<>();
 
+	public static CustomRenderers customRenderers;
+
 	public static void addRenderer(String name, DebugRenderer.Renderer renderer) {
 		debugRenderers.put(name, renderer);
 		rendererStatus.put(renderer, false);
@@ -33,7 +37,7 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 				ClientPlayNetworking.registerReceiver(SpawnInfoSender.DEBUG_SPAWNING, new ClientPlayNetworking.PlayChannelHandler() {
 					@Override
 					public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-						DebugRenderersMod.LOGGER.info("packet");
+						customRenderers.SPAWN_ATTEMPT_RENDERER.setSpawnInfo(new SpawnAttemptRenderer.SpawnInfo(buf));
 					}
 				});
 
