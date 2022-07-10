@@ -1,7 +1,6 @@
-package dev.bithole.debugrenderers.renderer;
+package dev.bithole.debugrenderers.renderers;
 
 import dev.bithole.debugrenderers.DebugRenderersClientMod;
-import dev.bithole.debugrenderers.DebugRenderersMod;
 import net.minecraft.client.MinecraftClient;
 
 public class CustomRenderers {

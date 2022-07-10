@@ -14,14 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerChunkManager.class)
 public abstract class ServerChunkManagerMixin {
 
-    @Accessor("spawnInfo")
-    abstract SpawnHelper.Info getSpawnInfo();
-
     @Inject(at = @At("TAIL"), method = "tickChunks()V")
     private void tickChunks(CallbackInfo info) {
         SpawnInfoSender.send(
                 (ServerWorld)((ServerChunkManager)(Object)this).getWorld(),
-                getSpawnInfo()
+                ((ServerChunkManager)(Object)this).getSpawnInfo()
         );
     }
 

@@ -1,7 +1,8 @@
 package dev.bithole.debugrenderers;
 
-import dev.bithole.debugrenderers.renderer.CustomRenderers;
-import dev.bithole.debugrenderers.renderer.SpawnAttemptRenderer;
+import dev.bithole.debugrenderers.commands.DebugRenderersCommand;
+import dev.bithole.debugrenderers.renderers.CustomRenderers;
+import dev.bithole.debugrenderers.renderers.SpawnAttemptRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;

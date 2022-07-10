@@ -27,32 +27,6 @@ public class SpawnInfoSender {
 
         PacketByteBuf buf = PacketByteBufs.create();
 
-        // num spawning chunks
-        buf.writeInt(info.getSpawningChunkCount());
-
-        // global mobcap
-        Object2IntMap<SpawnGroup> mobCounts = info.getGroupToCount();
-        buf.writeVarInt(mobCounts.size());
-        for(Object2IntMap.Entry<SpawnGroup> entry: mobCounts.object2IntEntrySet()) {
-            buf.writeString(entry.getKey().asString());
-            buf.writeInt(entry.getIntValue());
-        }
-
-        // per player mobcaps
-        SpawnDensityCapper capper = ((SpawnHelperInfoAccessor)info).getDensityCapper();
-        Map<ServerPlayerEntity, SpawnDensityCapper.DensityCap> perPlayerMobcaps = ((SpawnDensityCapperAccessor) capper).getDensityCaps();
-        buf.writeVarInt(perPlayerMobcaps.size());
-
-        for(Map.Entry<ServerPlayerEntity, SpawnDensityCapper.DensityCap> entry: perPlayerMobcaps.entrySet()) {
-            buf.writeUuid(entry.getKey().getUuid());
-            Object2IntMap<SpawnGroup> localMobCounts = ((DensityCapAccessor)entry.getValue()).getSpawnGroups();
-            buf.writeVarInt(localMobCounts.size());
-            for(Object2IntMap.Entry<SpawnGroup> countEntry: localMobCounts.object2IntEntrySet()) {
-                buf.writeString(countEntry.getKey().asString());
-                buf.writeInt(countEntry.getIntValue());
-            }
-        }
-
         NetworkHelper.sendToAll(world, buf, DEBUG_SPAWNING);
 
     }

@@ -1,5 +1,6 @@
 package dev.bithole.debugrenderers;
 
+import dev.bithole.debugrenderers.commands.MobCapsCommand;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -30,6 +31,7 @@ public class DebugRenderersMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
@@ -56,6 +58,11 @@ public class DebugRenderersMod implements ModInitializer {
             }
 
         });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            MobCapsCommand.register(dispatcher);
+        });
+
     }
 
 }

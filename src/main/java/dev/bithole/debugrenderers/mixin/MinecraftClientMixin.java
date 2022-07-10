@@ -1,9 +1,7 @@
 package dev.bithole.debugrenderers.mixin;
 
 import dev.bithole.debugrenderers.DebugRenderersClientMod;
-import dev.bithole.debugrenderers.DebugRenderersMod;
-import dev.bithole.debugrenderers.renderer.CustomRenderers;
-import dev.bithole.debugrenderers.renderer.SpawnAttemptRenderer;
+import dev.bithole.debugrenderers.renderers.CustomRenderers;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.render.debug.DebugRenderer;
