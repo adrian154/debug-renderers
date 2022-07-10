@@ -26,7 +26,7 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("chunkBorder", debugRenderer.chunkBorderDebugRenderer);
         DebugRenderersClientMod.addRenderer("heightmap", debugRenderer.heightmapDebugRenderer);
         DebugRenderersClientMod.addRenderer("collision", debugRenderer.collisionDebugRenderer);
-        DebugRenderersClientMod.addRenderer("neighborUpdate", debugRenderer.neighborUpdateDebugRenderer);
+        DebugRenderersClientMod.addRenderer("blockUpdate", debugRenderer.neighborUpdateDebugRenderer);
         DebugRenderersClientMod.addRenderer("structure", debugRenderer.structureDebugRenderer);
         DebugRenderersClientMod.addRenderer("skyLight", debugRenderer.skyLightDebugRenderer);
         DebugRenderersClientMod.addRenderer("blockOutline", debugRenderer.blockOutlineDebugRenderer);
@@ -38,11 +38,9 @@ public class MinecraftClientMixin {
         DebugRenderersClientMod.addRenderer("goalSelector", debugRenderer.goalSelectorDebugRenderer);
         DebugRenderersClientMod.addRenderer("brain", debugRenderer.villageDebugRenderer);
 
-        // WIP
-       DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
-
-        // broken
-        DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
+        // non-functional
+        //DebugRenderersClientMod.addRenderer("worldGenAttempt", debugRenderer.worldGenAttemptDebugRenderer);
+        //DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
 
         // custom
         DebugRenderersClientMod.customRenderers = new CustomRenderers(client);

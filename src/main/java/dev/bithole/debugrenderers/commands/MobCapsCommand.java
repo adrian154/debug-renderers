@@ -28,16 +28,17 @@ public class MobCapsCommand {
                 .executes(ctx -> showMobCaps(ctx.getSource())));
     }
 
-    private static void writeList(ServerCommandSource source, Object2IntMap<SpawnGroup> list) {
+    private static void writeList(ServerCommandSource source, Object2IntMap<SpawnGroup> list, int numSpawnableChunks, boolean local) {
         for(Object2IntMap.Entry<SpawnGroup> entry: list.object2IntEntrySet()) {
-            source.sendFeedback(Text.literal(String.format(" - %s: %d", entry.getKey().asString(), entry.getIntValue())), false);
+            int max = local ? entry.getKey().getCapacity() : entry.getKey().getCapacity() * numSpawnableChunks / 289;
+            source.sendFeedback(Text.literal(String.format(" - %s: %d/%d", entry.getKey().asString(), entry.getIntValue(), max)), false);
         }
     }
 
     private static int showMobCaps(ServerCommandSource source) {
         SpawnHelper.Info info = source.getWorld().getChunkManager().getSpawnInfo();
         source.sendFeedback(Text.literal("Global Mobcaps").styled(style -> style.withBold(true)), false);
-        writeList(source, info.getGroupToCount());
+        writeList(source, info.getGroupToCount(), info.getSpawningChunkCount(), false);
         return 0;
     }
 
@@ -46,7 +47,7 @@ public class MobCapsCommand {
         SpawnDensityCapper capper = ((SpawnHelperInfoAccessor)info).getDensityCapper();
         SpawnDensityCapper.DensityCap cap = ((SpawnDensityCapperAccessor)capper).getDensityCaps().get(player);
         source.sendFeedback(Text.literal("Mobcaps for ").append(player.getName()).styled(style -> style.withBold(true)), false);
-        writeList(source, ((DensityCapAccessor)cap).getSpawnGroups());
+        writeList(source, ((DensityCapAccessor)cap).getSpawnGroups(), info.getSpawningChunkCount(), true);
         return 0;
     }
 
