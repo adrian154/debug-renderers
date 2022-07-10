@@ -6,7 +6,11 @@
   "mixins": [
     "DebugInfoSenderMixin",
     "PathMixin",
-    "ThreadedAnvilChunkStorageMixin"
+    "ThreadedAnvilChunkStorageMixin",
+    "SpawnHelperInfoAccessor",
+    "SpawnDensityCapperAccessor",
+    "DensityCapAccessor",
+    "ServerChunkManagerMixin"
   ],
   "client": [
     "DebugRendererMixin",

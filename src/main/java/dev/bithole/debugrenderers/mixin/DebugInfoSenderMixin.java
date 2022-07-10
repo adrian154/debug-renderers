@@ -62,7 +62,7 @@ public class DebugInfoSenderMixin {
     private static final IDMapper<GoalSelector> goalSelectorIDMapper = new IDMapper<>();
 
     @Invoker("sendToAll")
-    private static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
+    public static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
         throw new AssertionError();
     }
 
