@@ -10,7 +10,8 @@
     "SpawnHelperInfoAccessor",
     "SpawnDensityCapperAccessor",
     "DensityCapAccessor",
-    "ServerChunkManagerMixin"
+    "ServerChunkManagerMixin",
+    "SpawnHelperMixin"
   ],
   "client": [
     "DebugRendererMixin",
