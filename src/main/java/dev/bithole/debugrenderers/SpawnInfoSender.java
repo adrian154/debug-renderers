@@ -7,7 +7,10 @@ import dev.bithole.debugrenderers.mixin.SpawnHelperInfoAccessor;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.server.network.DebugInfoSender;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -50,8 +53,15 @@ public class SpawnInfoSender {
             }
         }
 
-        DebugInfoSenderMixin.sendToAll(world, buf, DEBUG_SPAWNING);
+        sendToAll(world, buf, DEBUG_SPAWNING);
 
+    }
+
+    private static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
+        CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(channel, buf);
+        for (PlayerEntity playerEntity : world.getPlayers()) {
+            ((ServerPlayerEntity)playerEntity).networkHandler.sendPacket(packet);
+        }
     }
 
 }

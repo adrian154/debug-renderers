@@ -8,8 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(SpawnDensityCapper.DensityCap.class)
 public interface DensityCapAccessor {
-
     @Accessor("spawnGroupsToDensity")
     public Object2IntMap<SpawnGroup> getSpawnGroups();
-
 }

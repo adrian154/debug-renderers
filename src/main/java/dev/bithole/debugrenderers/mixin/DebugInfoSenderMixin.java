@@ -40,7 +40,7 @@ import java.util.*;
 
 // WARNING: flaky code ahead due to poor documentation
 @Mixin(DebugInfoSender.class)
-public class DebugInfoSenderMixin {
+public abstract class DebugInfoSenderMixin {
 
     private static class IDMapper<T> {
 
