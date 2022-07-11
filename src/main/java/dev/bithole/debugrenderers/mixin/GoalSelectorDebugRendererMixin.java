@@ -5,7 +5,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.debug.GoalSelectorDebugRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,8 +21,10 @@ public abstract class GoalSelectorDebugRendererMixin {
 
     private static final Map<Integer, Long> lastSeen = new HashMap<>();
 
-    @Accessor("goalSelectors")
-    public abstract Map<Integer, List<GoalSelectorDebugRenderer.GoalSelector>> getGoalSelectors();
+    @Shadow
+    @Final
+    private Map<Integer, List<GoalSelectorDebugRenderer.GoalSelector>> goalSelectors;
+
 
     @Inject(at = @At("TAIL"), method="setGoalSelectorList(ILjava/util/List;)V")
     public void setGoalSelectorList(int index, List<GoalSelectorDebugRenderer.GoalSelector> selectors, CallbackInfo info) {
@@ -30,7 +34,6 @@ public abstract class GoalSelectorDebugRendererMixin {
     @Inject(at = @At("TAIL"), method="render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;DDD)V")
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, double cameraX, double cameraY, double cameraZ, CallbackInfo info) {
 
-        Map<Integer, List<GoalSelectorDebugRenderer.GoalSelector>> goalSelectors = getGoalSelectors();
         Iterator<Map.Entry<Integer, Long>> it = lastSeen.entrySet().iterator();
         long time = MinecraftClient.getInstance().world.getTime();
 

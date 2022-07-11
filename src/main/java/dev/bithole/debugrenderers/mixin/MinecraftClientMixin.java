@@ -17,8 +17,7 @@ public class MinecraftClientMixin {
     @Inject(at = @At("TAIL"), method = "<init>(Lnet/minecraft/client/RunArgs;)V")
     public void init(RunArgs args, CallbackInfo info) {
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        DebugRenderer debugRenderer = client.debugRenderer;
+        DebugRenderer debugRenderer = ((MinecraftClient)(Object)this).debugRenderer;
 
         // working
         DebugRenderersClientMod.addRenderer("pathfinding", debugRenderer.pathfindingDebugRenderer);
@@ -43,7 +42,7 @@ public class MinecraftClientMixin {
         //DebugRenderersClientMod.addRenderer("villageSections", debugRenderer.villageSectionsDebugRenderer);
 
         // custom
-        DebugRenderersClientMod.customRenderers = new CustomRenderers(client);
+        DebugRenderersClientMod.customRenderers = new CustomRenderers((MinecraftClient)(Object)this);
 
     }
 

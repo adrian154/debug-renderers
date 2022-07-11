@@ -30,6 +30,7 @@ import net.minecraft.world.event.PositionSource;
 import net.minecraft.world.event.PositionSourceType;
 import net.minecraft.world.event.listener.GameEventListener;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -61,8 +62,8 @@ public abstract class DebugInfoSenderMixin {
     private static final IDMapper<Path> pathIDMapper = new IDMapper<>();
     private static final IDMapper<GoalSelector> goalSelectorIDMapper = new IDMapper<>();
 
-    @Invoker("sendToAll")
-    public static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
+    @Shadow
+    private static void sendToAll(ServerWorld world, PacketByteBuf buf, Identifier channel) {
         throw new AssertionError();
     }
 
@@ -240,12 +241,5 @@ public abstract class DebugInfoSenderMixin {
         writeBrain(entity, buf);
         sendToAll((ServerWorld)entity.getWorld(), buf, CustomPayloadS2CPacket.DEBUG_BRAIN);
     }
-
-    /*
-    @Inject(at = @At("HEAD"), method = "(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;)V")
-    private static void sendPoiAddition(ServerWorld world, BlockPos pos, CallbackInfo info) {
-
-    }
-    */
 
 }

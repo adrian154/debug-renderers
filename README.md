@@ -23,6 +23,10 @@ This mod activates some of the debug renderers that are present in the vanilla g
 This mod also adds some custom renderers that I thought would be useful:
 * Mob spawning attempts
 
+# Usage
+
+Debug renderers can be toggled with the `/dr <renderer>` command, and listed by running `/dr` without arguments.
+
 # Gallery
 
 ### Pathfinding

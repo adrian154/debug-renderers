@@ -4,6 +4,7 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.TargetPathNode;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,14 +18,14 @@ import java.util.Set;
 @Mixin(Path.class)
 public abstract class PathMixin {
 
-    @Accessor("debugNodes")
-    public abstract void setOpenSet(PathNode[] openSet);
+    @Shadow
+    private PathNode[] debugNodes;
 
-    @Accessor("debugSecondNodes")
-    public abstract void setClosedSet(PathNode[] closedSet);
+    @Shadow
+    private PathNode[] debugSecondNodes;
 
-    @Accessor("debugTargetNodes")
-    public abstract void setDebugTargetNodes(Set<TargetPathNode> targets);
+    @Shadow
+    private Set<TargetPathNode> debugTargetNodes;
 
     @Inject(at = @At("HEAD"), method = "toBuffer(Lnet/minecraft/network/PacketByteBuf;)V")
     public void toBuffer(CallbackInfo info) {
@@ -43,12 +44,12 @@ public abstract class PathMixin {
                 openSet.add(node);
         }
 
-        setOpenSet(openSet.toArray(new PathNode[0]));
-        setClosedSet(closedSet.toArray(new PathNode[0]));
+        debugNodes = openSet.toArray(new PathNode[0]);
+        debugSecondNodes = closedSet.toArray(new PathNode[0]);
 
         // this value appears to be inaccessible outside of Path, so we won't worry about its function too much
         // however, Path::toBuffer won't write anything if this set has zero members, so we have to pass a dummy element
-        setDebugTargetNodes(Collections.singleton(new TargetPathNode(0, 0, 0)));
+        debugTargetNodes = Collections.singleton(new TargetPathNode(0, 0, 0));
 
     }
 
