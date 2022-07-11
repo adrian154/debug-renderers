@@ -1,6 +1,5 @@
 package dev.bithole.debugrenderers;
 
-import dev.bithole.debugrenderers.commands.MobCapsCommand;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -8,7 +7,6 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,10 +55,6 @@ public class DebugRenderersMod implements ModInitializer {
                 }
             }
 
-        });
-
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            MobCapsCommand.register(dispatcher);
         });
 
     }

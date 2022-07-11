@@ -1,6 +1,5 @@
 package dev.bithole.debugrenderers;
 
-import dev.bithole.debugrenderers.commands.DebugRenderersCommand;
 import dev.bithole.debugrenderers.renderers.CustomRenderers;
 import dev.bithole.debugrenderers.renderers.SpawnAttemptRenderer;
 import net.fabricmc.api.ClientModInitializer;
@@ -46,7 +45,7 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			DebugRenderersCommand.register(dispatcher);
+			NetworkHelper.DebugRenderersCommand.register(dispatcher);
 		});
 
 	}

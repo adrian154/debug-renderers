@@ -7,9 +7,6 @@
     "DebugInfoSenderMixin",
     "PathMixin",
     "ThreadedAnvilChunkStorageMixin",
-    "SpawnHelperInfoAccessor",
-    "SpawnDensityCapperAccessor",
-    "DensityCapAccessor",
     "ServerChunkManagerMixin",
     "SpawnHelperMixin"
   ],
