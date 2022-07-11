@@ -16,7 +16,7 @@ public class SpawnHelperMixin {
 
     @Inject(at = @At("HEAD"), method = "spawnEntitiesInChunk(Lnet/minecraft/entity/SpawnGroup;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/chunk/Chunk;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/SpawnHelper$Checker;Lnet/minecraft/world/SpawnHelper$Runner;)V")
     private static void spawnEntitiesInChunk(SpawnGroup group, ServerWorld world, Chunk chunk, BlockPos pos, SpawnHelper.Checker checker, SpawnHelper.Runner runner, CallbackInfo info) {
-        SpawnInfoSender.addSpawnAttempt(pos);
+        SpawnInfoSender.addSpawnAttempt(group, pos);
     }
 
 }

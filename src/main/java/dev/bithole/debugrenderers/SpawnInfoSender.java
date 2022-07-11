@@ -25,14 +25,14 @@ import java.util.Map;
 public class SpawnInfoSender {
 
     public static final Identifier DEBUG_SPAWNING = new Identifier("debugrenderers", "spawning");
-    private static final List<BlockPos> spawnAttempts = new ArrayList<>();
+    private static final List<SpawnAttempt> spawnAttempts = new ArrayList<>();
 
     public static void clear() {
         spawnAttempts.clear();
     }
 
-    public static void addSpawnAttempt(BlockPos pos) {
-        spawnAttempts.add(pos);
+    public static void addSpawnAttempt(SpawnGroup group, BlockPos pos) {
+        spawnAttempts.add(new SpawnAttempt(pos, group));
     }
 
     public static void send(ServerWorld world) {
@@ -40,12 +40,22 @@ public class SpawnInfoSender {
         PacketByteBuf buf = PacketByteBufs.create();
 
         buf.writeVarInt(spawnAttempts.size());
-        for(BlockPos pos: spawnAttempts) {
-            buf.writeBlockPos(pos);
+        for(SpawnAttempt attempt: spawnAttempts) {
+            buf.writeString(attempt.group.asString());
+            buf.writeBlockPos(attempt.pos);
         }
 
         NetworkHelper.sendToAll(world, buf, DEBUG_SPAWNING);
 
+    }
+
+    private static class SpawnAttempt {
+        public final BlockPos pos;
+        public final SpawnGroup group;
+        public SpawnAttempt(BlockPos pos, SpawnGroup group) {
+            this.pos = pos;
+            this.group = group;
+        }
     }
 
 }
