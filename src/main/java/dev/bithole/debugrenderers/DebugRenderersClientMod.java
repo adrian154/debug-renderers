@@ -1,6 +1,8 @@
 package dev.bithole.debugrenderers;
 
-import dev.bithole.debugrenderers.renderers.CustomRenderers;
+import dev.bithole.debugrenderers.commands.PingCommand;
+import dev.bithole.debugrenderers.gui.InfoOverlay;
+import dev.bithole.debugrenderers.renderers.Renderers;
 import dev.bithole.debugrenderers.renderers.SpawnAttemptRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -12,23 +14,32 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.network.PacketByteBuf;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class DebugRenderersClientMod implements ClientModInitializer {
 
-	public static final Map<String, DebugRenderer.Renderer> debugRenderers = new HashMap<>();
-	public static final Map<DebugRenderer.Renderer, Boolean> rendererStatus = new HashMap<>();
+	private static DebugRenderersClientMod INSTANCE;
 
-	public static CustomRenderers customRenderers;
+	private Renderers renderers;
+	private InfoOverlay infoOverlay;
 
-	public static void addRenderer(String name, DebugRenderer.Renderer renderer) {
-		debugRenderers.put(name, renderer);
-		rendererStatus.put(renderer, false);
+	public static DebugRenderersClientMod getInstance() {
+		return INSTANCE;
+	}
+
+	public void initRenderers(DebugRenderer debugRenderer) {
+		this.renderers = new Renderers(debugRenderer);
+	}
+
+	public Renderers getRenderers() {
+		return renderers;
 	}
 
 	@Override
 	public void onInitializeClient() {
+
+		INSTANCE = this;
+
+		MinecraftClient client = MinecraftClient.getInstance();
+		infoOverlay = new InfoOverlay(client);
 
 		ClientPlayConnectionEvents.INIT.register(new ClientPlayConnectionEvents.Init() {
 			@Override
@@ -37,7 +48,9 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 				ClientPlayNetworking.registerReceiver(SpawnInfoSender.DEBUG_SPAWNING, new ClientPlayNetworking.PlayChannelHandler() {
 					@Override
 					public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-						customRenderers.SPAWN_ATTEMPT_RENDERER.setSpawnInfo(new SpawnAttemptRenderer.SpawnInfo(buf));
+						if(renderers != null) {
+							renderers.SPAWN_ATTEMPT_RENDERER.setSpawnInfo(new SpawnAttemptRenderer.SpawnInfo(buf));
+						}
 					}
 				});
 
@@ -45,7 +58,7 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			NetworkHelper.DebugRenderersCommand.register(dispatcher);
+			PingCommand.register(dispatcher);
 		});
 
 	}

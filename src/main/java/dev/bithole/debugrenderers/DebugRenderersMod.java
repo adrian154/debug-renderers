@@ -1,7 +1,6 @@
 package dev.bithole.debugrenderers;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.Resource;
@@ -39,7 +38,6 @@ public class DebugRenderersMod implements ModInitializer {
             @Override
             public void reload(ResourceManager manager) {
                 Map<Identifier, Resource> resources = manager.findResources("mappings", path -> true);
-                LOGGER.info("# of resources: " + resources.size());
                 for(Resource resource: resources.values()) {
                     if(resource != null) {
                         try(InputStream stream = resource.getInputStream()) {

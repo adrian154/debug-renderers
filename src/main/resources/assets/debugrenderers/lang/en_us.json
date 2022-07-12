@@ -1,8 +1,22 @@
 {
-  "commands.dr.onEnabled": "Enabled %s renderer",
-  "commands.dr.onDisabled": "Disabled %s renderer",
-  "commands.dr.noSuchRenderer": "There is no renderer called %s",
-  "commands.dr.enabledHeader": "ENABLED: ",
-  "commands.dr.disabledHeader": "DISABLED: ",
-  "commands.dr.none": "none"
+
+  "commands.ping.noInfo": "No data was found for player %s",
+  "commands.ping.result": "%s has a ping of ",
+
+  "renderer.spawnAttempt": "Spawn Attempts",
+  "renderer.pathfinding": "Pathfinding",
+  "renderer.water": "Water Levels",
+  "renderer.heightmap": "Highest Spawnable Block",
+  "renderer.collision": "Block Collision Boxes",
+  "renderer.neighborUpdate": "Block Updates",
+  "renderer.structure": "Structure Outlines",
+  "renderer.skyLight": "Sky Light",
+  "renderer.blockOutline": "Block Faces",
+  "renderer.chunkLoading": "Chunk Loading",
+  "renderer.bee": "Bee Info",
+  "renderer.gameEvent": "Sculk/Warden",
+  "renderer.raidCenter": "Raid Centers",
+  "renderer.goalSelector": "Goal Selectors",
+  "renderer.brain": "Entity Brains"
+
 }
