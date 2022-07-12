@@ -28,33 +28,24 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 	public void initRenderers(DebugRenderer debugRenderer) {
 		this.renderers = new Renderers(debugRenderer);
 	}
-
 	public Renderers getRenderers() {
 		return renderers;
 	}
+
+	public void initInfoOverlay(MinecraftClient client) { this.infoOverlay = new InfoOverlay(client); }
+	public InfoOverlay getInfoOverlay() { return infoOverlay; }
 
 	@Override
 	public void onInitializeClient() {
 
 		INSTANCE = this;
 
-		MinecraftClient client = MinecraftClient.getInstance();
-		infoOverlay = new InfoOverlay(client);
-
-		ClientPlayConnectionEvents.INIT.register(new ClientPlayConnectionEvents.Init() {
-			@Override
-			public void onPlayInit(ClientPlayNetworkHandler handler, MinecraftClient client) {
-
-				ClientPlayNetworking.registerReceiver(SpawnInfoSender.DEBUG_SPAWNING, new ClientPlayNetworking.PlayChannelHandler() {
-					@Override
-					public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-						if(renderers != null) {
-							renderers.SPAWN_ATTEMPT_RENDERER.setSpawnInfo(new SpawnAttemptRenderer.SpawnInfo(buf));
-						}
-					}
-				});
-
-			}
+		ClientPlayConnectionEvents.INIT.register((handler, client) -> {
+			ClientPlayNetworking.registerReceiver(SpawnInfoSender.DEBUG_SPAWNING, (client1, handler1, buf, responseSender) -> {
+				if (renderers != null) {
+					renderers.SPAWN_ATTEMPT_RENDERER.setSpawnInfo(new SpawnAttemptRenderer.SpawnInfo(buf));
+				}
+			});
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
