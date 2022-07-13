@@ -15,7 +15,9 @@
     "MinecraftClientMixin",
     "PathfindingDebugRendererMixin",
     "GoalSelectorDebugRendererMixin",
-    "InGameHudMixin"
+    "InGameHudMixin",
+    "MinecraftClientAccessor",
+    "PlayerListEntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

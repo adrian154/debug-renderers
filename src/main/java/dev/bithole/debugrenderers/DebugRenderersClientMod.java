@@ -8,11 +8,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.debug.DebugRenderer;
-import net.minecraft.network.PacketByteBuf;
 
 public class DebugRenderersClientMod implements ClientModInitializer {
 
@@ -41,11 +38,13 @@ public class DebugRenderersClientMod implements ClientModInitializer {
 		INSTANCE = this;
 
 		ClientPlayConnectionEvents.INIT.register((handler, client) -> {
+
 			ClientPlayNetworking.registerReceiver(SpawnInfoSender.DEBUG_SPAWNING, (client1, handler1, buf, responseSender) -> {
 				if (renderers != null) {
 					renderers.SPAWN_ATTEMPT_RENDERER.setSpawnInfo(new SpawnAttemptRenderer.SpawnInfo(buf));
 				}
 			});
+
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {

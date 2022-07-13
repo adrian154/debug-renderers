@@ -26,20 +26,18 @@ public class PingCommand {
         return showPing(source, MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(source.getPlayer().getUuid()));
     }
 
+    public static Formatting getPingColor(int latency) {
+        if(latency < 100) return Formatting.GREEN;
+        if(latency < 200) return Formatting.YELLOW;
+        return Formatting.RED;
+    }
+
     private static int showPing(FabricClientCommandSource source, PlayerListEntry info) {
         if(info == null) {
             source.sendError(Text.translatable("commands.ping.noInfo"));
             return 1;
         }
-        Formatting color;
-        if(info.getLatency() < 100) {
-            color = Formatting.GREEN;
-        } else if(info.getLatency() < 200) {
-            color = Formatting.YELLOW;
-        } else {
-            color = Formatting.RED;
-        }
-        source.sendFeedback(Text.translatable("commands.ping.result", info.getProfile().getName()).append(Text.literal(info.getLatency() + "ms").formatted(color)));
+        source.sendFeedback(Text.translatable("commands.ping.result", info.getProfile().getName()).append(Text.literal(info.getLatency() + "ms").formatted(getPingColor(info.getLatency()))));
         return 0;
     }
 
