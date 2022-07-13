@@ -13,7 +13,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class InfoOverlay extends DrawableHelper {
         this.textRenderer = client.textRenderer;
         this.mod = mod;
         this.settings = new InfoOverlaySettings(
+                true,
                 true,
                 true,
                 true,
@@ -68,6 +71,7 @@ public class InfoOverlay extends DrawableHelper {
         List<String> lines = new ArrayList<>();
         Entity cameraEntity = this.client.getCameraEntity();
         ClientPacketReceiver receiver = mod.getPacketReceiver();
+        BlockPos blockPos = cameraEntity.getBlockPos();
 
         if(settings.FPS) {
             lines.add(String.format("FPS: %d", MinecraftClientAccessor.getFPS()));
@@ -89,6 +93,13 @@ public class InfoOverlay extends DrawableHelper {
             lines.add(String.format("Facing: %s", facing));
         }
 
+        if(settings.lightLevel) {
+            int lightLevel = this.client.world.getChunkManager().getLightingProvider().getLight(blockPos, 0);
+            int skyLight = this.client.world.getLightLevel(LightType.SKY, blockPos);
+            int blockLight = this.client.world.getLightLevel(LightType.BLOCK, blockPos);
+            lines.add(String.format("Light level: %d (%d sky, %d block)", lightLevel, skyLight, blockLight));
+        }
+
         if(settings.tps) {
             if(receiver.tickTimesAvailable()) {
                 float avgTickTime = mod.getPacketReceiver().avgTickTime();
@@ -108,7 +119,7 @@ public class InfoOverlay extends DrawableHelper {
         }
 
         if(settings.biome) {
-            RegistryEntry<Biome> entry = client.world.getBiome(cameraEntity.getBlockPos());
+            RegistryEntry<Biome> entry = client.world.getBiome(blockPos);
             String name = entry.getKeyOrValue().map(key -> {
                 Identifier id = key.getValue();
                 return Text.translatable("biome." + id.getNamespace() + "." + id.getPath()).getString();
@@ -146,7 +157,8 @@ public class InfoOverlay extends DrawableHelper {
         boolean biome,
         boolean ping,
         boolean speed,
-        boolean tps
+        boolean tps,
+        boolean lightLevel
     ) {
 
     }
