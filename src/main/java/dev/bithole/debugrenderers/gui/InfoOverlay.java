@@ -1,7 +1,9 @@
 package dev.bithole.debugrenderers.gui;
 
+import dev.bithole.debugrenderers.DebugRenderersClientMod;
 import dev.bithole.debugrenderers.commands.PingCommand;
 import dev.bithole.debugrenderers.mixin.MinecraftClientAccessor;
+import dev.bithole.debugrenderers.network.ClientPacketReceiver;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -9,6 +11,7 @@ import net.minecraft.client.gui.hud.DebugHud;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.biome.Biome;
@@ -21,13 +24,23 @@ public class InfoOverlay extends DrawableHelper {
     private final MinecraftClient client;
     private final TextRenderer textRenderer;
     private final InfoOverlaySettings settings;
+    private final DebugRenderersClientMod mod;
 
     private int lastKnownLatency;
 
-    public InfoOverlay(MinecraftClient client) {
+    public InfoOverlay(MinecraftClient client, DebugRenderersClientMod mod) {
         this.client = client;
         this.textRenderer = client.textRenderer;
-        this.settings = new InfoOverlaySettings(true, true, true, true, true);
+        this.mod = mod;
+        this.settings = new InfoOverlaySettings(
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+        );
     }
 
     public void updateLatency(int latency) {
@@ -54,7 +67,7 @@ public class InfoOverlay extends DrawableHelper {
 
         List<String> lines = new ArrayList<>();
         Entity cameraEntity = this.client.getCameraEntity();
-
+        ClientPacketReceiver receiver = mod.getPacketReceiver();
 
         if(settings.FPS) {
             lines.add(String.format("FPS: %d", MinecraftClientAccessor.getFPS()));
@@ -76,6 +89,24 @@ public class InfoOverlay extends DrawableHelper {
             lines.add(String.format("Facing: %s", facing));
         }
 
+        if(settings.tps) {
+            if(receiver.tickTimesAvailable()) {
+                float avgTickTime = mod.getPacketReceiver().avgTickTime();
+                float tps = Math.min(20, 1000 / avgTickTime);
+                Formatting color;
+                if (tps > 18) {
+                    color = Formatting.GREEN;
+                } else if (tps > 15) {
+                    color = Formatting.YELLOW;
+                } else {
+                    color = Formatting.RED;
+                }
+                lines.add(String.format("TPS: %s%.1f%s / MSPT: %s%.1fms", color, tps, Formatting.RESET, color, avgTickTime));
+            } else {
+                lines.add(Formatting.GRAY + "TPS not available");
+            }
+        }
+
         if(settings.biome) {
             RegistryEntry<Biome> entry = client.world.getBiome(cameraEntity.getBlockPos());
             String name = entry.getKeyOrValue().map(key -> {
@@ -88,11 +119,20 @@ public class InfoOverlay extends DrawableHelper {
         if(settings.ping) {
             String ping;
             if(lastKnownLatency == 0) {
-                ping = "--";
+                lines.add(Formatting.GRAY + "Ping not available");
             } else {
-                ping = PingCommand.getPingColor(lastKnownLatency).toString() + lastKnownLatency + "ms";
+                lines.add(String.format("Ping: %s", PingCommand.getPingColor(lastKnownLatency).toString() + lastKnownLatency + "ms"));
             }
-            lines.add(String.format("Ping: %s", ping));
+
+        }
+
+        // not sure why but cameraEntity.getVelocity() returns incorrect values so we have to manually calculate
+        if(settings.speed) {
+            double dx = cameraEntity.getX() - cameraEntity.prevX,
+                   dy = cameraEntity.getY() - cameraEntity.prevY,
+                   dz = cameraEntity.getZ() - cameraEntity.prevZ;
+            double velocity = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            lines.add(String.format("Speed: %.1fm/s", velocity * 20));
         }
 
         return lines;
@@ -104,7 +144,9 @@ public class InfoOverlay extends DrawableHelper {
         boolean coordinates,
         boolean facing,
         boolean biome,
-        boolean ping
+        boolean ping,
+        boolean speed,
+        boolean tps
     ) {
 
     }

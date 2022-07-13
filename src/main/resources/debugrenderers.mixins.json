@@ -7,8 +7,7 @@
     "DebugInfoSenderMixin",
     "PathMixin",
     "ThreadedAnvilChunkStorageMixin",
-    "ServerChunkManagerMixin",
-    "SpawnHelperMixin"
+    "MinecraftServerMixin"
   ],
   "client": [
     "DebugRendererMixin",

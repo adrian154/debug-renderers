@@ -14,8 +14,6 @@ import java.util.Set;
 
 public class Renderers {
 
-    public final SpawnAttemptRenderer SPAWN_ATTEMPT_RENDERER;
-
     private final Map<DebugRenderer.Renderer, Text> rendererNames = new HashMap<>();
     private final Map<DebugRenderer.Renderer, Boolean> rendererStatus = new HashMap<>();
 
@@ -53,8 +51,7 @@ public class Renderers {
     public Renderers(DebugRenderer debugRenderer) {
 
         // initialize custom renderers
-        SPAWN_ATTEMPT_RENDERER = new SpawnAttemptRenderer();
-        this.addRenderer(SPAWN_ATTEMPT_RENDERER, Text.translatable("renderer.spawnAttempt"));
+        // ...
 
         // add Minecraft renderers
         this.addRenderer(debugRenderer.pathfindingDebugRenderer, Text.translatable("renderer.pathfinding"));

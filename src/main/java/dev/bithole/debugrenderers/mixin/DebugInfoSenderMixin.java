@@ -1,6 +1,7 @@
 package dev.bithole.debugrenderers.mixin;
 
 import dev.bithole.debugrenderers.DebugRenderersMod;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
